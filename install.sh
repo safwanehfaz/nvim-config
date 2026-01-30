@@ -135,3 +135,4 @@ fi
 
 setup_config
 echo "Operation completed successfully!"
+echo -e "\033[32mLaunch Neovim by typing 'nvim' in your terminal.\033[0m"
