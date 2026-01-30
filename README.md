@@ -12,7 +12,7 @@ This configuration is designed to make your Neovim experience faster, more effic
 
 - Flexible Installation: Options to install via Tarball or AppImage based on your preference.
 
-📥 Installation (One-Liner Setup)
+## Installation (One-Liner Setup)
 
 Paste the following command into your terminal:
 
