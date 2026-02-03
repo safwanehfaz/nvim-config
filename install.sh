@@ -6,6 +6,12 @@ REPO_URL="https://raw.githubusercontent.com/safwanehfaz/nvim-config/main/nvim_ve
 CONFIG_REPO="https://github.com/safwanehfaz/nvim-config.git"
 ARCH=$(uname -m)
 
+# Validate architecture support early to avoid silent failures
+if [ "$ARCH" != "x86_64" ] && [ "$ARCH" != "aarch64" ]; then
+    echo "Error: Unsupported architecture '$ARCH'."
+    echo "This installer currently supports only x86_64 and aarch64."
+    exit 1
+fi
 # --- [ Pre-flight Checks ] ---
 
 check_internet() {

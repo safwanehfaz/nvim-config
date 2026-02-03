@@ -19,8 +19,12 @@ jobs:
         id: get_tag
         run: |
           # Fetch the latest release tag from Neovim GitHub API
-          LATEST_TAG=$(curl -s https://api.github.com/repos/neovim/neovim/releases/latest | jq -r .tag_name)
-          echo "latest_tag=$LATEST_TAG" >> $GITHUB_OUTPUT
+          LATEST_TAG=$(curl -s -H "Authorization: Bearer ${{ github.token }}" https://api.github.com/repos/neovim/neovim/releases/latest | jq -r .tag_name)
+          if [ -z "$LATEST_TAG" ] || [ "$LATEST_TAG" = "null" ]; then
+            echo "Error: Retrieved Neovim tag is empty or invalid." >&2
+            exit 1
+          fi
+          echo "latest_tag=$LATEST_TAG" >> "$GITHUB_OUTPUT"
 
       - name: Check and Update Version
         id: check_version
@@ -52,7 +56,7 @@ jobs:
         run: |
           # Configure git with GitHub Actions bot identity
           git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git push || { echo "Push failed"; exit 1; }
           
           git add nvim_version.txt
           git commit -m "Update Neovim version to ${{ steps.get_tag.outputs.latest_tag }}"
