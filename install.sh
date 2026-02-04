@@ -111,7 +111,11 @@ check_wished_version() {
 check_internet
 validate_sudo
 
-LATEST_VERSION=$(curl -s "$REPO_URL")
+LATEST_VERSION=$(curl -s "$REPO_URL") || { echo "Error: Failed to fetch latest version"; exit 1; }
+if [ -z "$LATEST_VERSION" ]; then
+    echo "Error: Could not determine latest version"
+    exit 1
+fi
 if command -v nvim &> /dev/null; then
     CURRENT_VERSION=$(nvim --version | head -n 1 | grep -o 'v[0-9.]*')
 else
@@ -126,17 +130,25 @@ if [ "$CURRENT_VERSION" != "$LATEST_VERSION" ]; then
     clean_old_installations
     
     LINK=$(get_download_link "$WISHED_VERSION")
+    FILENAME=$(basename "$LINK")
     echo "Downloading Neovim..."
     curl -LO "$LINK"
 
     if [ "$WISHED_VERSION" = "appimage" ]; then
-        chmod +x nvim-linux-*.appimage
-        sudo mv nvim-linux-*.appimage /usr/local/bin/nvim
+        chmod +x "$FILENAME"
+        sudo mv "$FILENAME" /usr/local/bin/nvim
     else
-        tar -xzf nvim-linux-*.tar.gz
-        sudo rm -rf /opt/nvim && sudo mv nvim-linux-* /opt/nvim
+        tar -xzf "$FILENAME"
+        extracted_dir=$(tar -tzf "$FILENAME" | head -1 | cut -f1 -d"/")
+        if [ -z "$extracted_dir" ] || [ ! -d "$extracted_dir" ]; then
+            echo "Error: Failed to determine extracted Neovim directory."
+            exit 1
+        fi
+        sudo rm -rf /opt/nvim
+        sudo mv "$extracted_dir" /opt/nvim
         sudo ln -sf /opt/nvim/bin/nvim /usr/local/bin/nvim
     fi
+
 fi
 
 setup_config
